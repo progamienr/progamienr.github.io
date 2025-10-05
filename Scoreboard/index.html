@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Fedoraware Leaderboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="/media/fedoraware.ico" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/1.0.21/jquery.csv.min.js"></script>
+</head>
+<body class="text-slate-50 bg-zinc-900 w-full h-screen">
+
+<div class="grid gap-5 grid-cols-3 grid-rows-1 h-full text-center flex flex-col justify-center items-center">
+    <div class="animate-pulse">
+        <span class="text-8xl font-bold">DO NOT CHEAT</span>
+    </div>
+
+    <div>
+        <span class="text-3xl font-bold"><span class="titlecolor">Fedoraware</span> Leaderboard</span>
+
+        <div class="w-full max-h-96 overflow-y-auto">
+            <table id="scoreTable" class="w-full max-w-4xl max-h-2 border-collapse">
+                <thead>
+                <tr>
+                    <th>Steam-ID</th>
+                    <th>Kills</th>
+                    <th>Deaths</th>
+                    <th>Highest Killstreak</th>
+                </tr>
+                </thead>
+
+                <tbody id="scoreBody">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="animate-pulse">
+        <span class="text-8xl font-bold">I WILL REMOVE AND BAN HACKERS</span>
+    </div>
+</div>
+
+<script>
+
+    document.location = "http://198.244.189.210:4077/leaderboard";
+    
+    function s(str){
+        return str.replace(/[^a-z0-9áéíóúñü \.\[\]:,_-]/gim,"").trim();
+    }
+
+    function UpdateTable() {
+        $.get("http://198.244.189.210:4077/get_info", function(data) {
+            let scoreData = data.map((entry) => {
+                return entry.split(",");
+            });
+
+            // Remove the first entry, which is the header
+            scoreData.shift();
+
+            // Sort by K/D
+            scoreData.sort((a, b) => {
+                let aRatio = a[1] / a[2];
+                let bRatio = b[1] / b[2];
+                return bRatio - aRatio;
+            });
+
+            // Add table entries
+            $("#scoreBody").empty();
+            scoreData.forEach((entry) => {
+                if (entry.length !== 4) {
+                    return;
+                }
+
+                $("#scoreBody").append(`<tr>
+                <td><a href="https://steamcommunity.com/profiles/${ s(entry[0]) }" target="_blank">${ s(entry[0]) }</a></td>
+                <td>${ s(entry[1]) }</td>
+                <td>${ s(entry[2]) }</td>
+                <td>${ s(entry[3]) }</td>
+            </tr>`);
+            });
+        });
+    }
+
+    $(window).ready(() => {
+        UpdateTable();
+
+        setInterval(UpdateTable, 30 * 1000);
+    });
+</script>
+</body>
+</html>
